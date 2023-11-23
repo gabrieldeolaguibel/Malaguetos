@@ -3,6 +3,8 @@
  */
 #include "../include/PlayerMovement.h"
 #include "../include/game.h"
+#include "../include/Position.h"
+
 
 const float Game::SCENE_WIDTH = 900.0f;
 const float Game::SCENE_HEIGHT = 700.0f;
@@ -10,7 +12,7 @@ const float Game::PLAYER_START_X = 400.0f;
 const float Game::PLAYER_START_Y = 300.0f;
 const float Game::RADIUS = 40.0f;
 
-Game::Game() {
+Game::Game() : playerPosition(PLAYER_START_X, PLAYER_START_Y), speedX(2.0f), speedY(2.0f) {
     initWindow();
     initBackground();
     initPlayer();
@@ -71,8 +73,8 @@ void Game::processInput() {
  * Function to update the position of the player
  */
 void Game::update() {
-    sf::Vector2f newPosition = PlayerMovement::updatePosition(player.getPosition());
-    player.setPosition(newPosition);
+    playerPosition = PlayerMovement::updatePosition(playerPosition, speedX, speedY);
+    player.setPosition(playerPosition.x, playerPosition.y);
 }
 
 /**

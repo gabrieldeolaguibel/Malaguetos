@@ -1,11 +1,9 @@
 /*
- * File: game.h
- * Author: Alessandra Gorla
- * Date: November 21, 2023
  * Description: Game class header.
  */
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "Position.h"
 
 class Game {
 public:
@@ -19,6 +17,10 @@ private:
     sf::Texture playerTexture;
     sf::CircleShape player;
 
+    Position playerPosition; // New member for player position
+    float speedX; // Speed in X direction
+    float speedY; // Speed in Y direction
+    
     static const float SCENE_WIDTH;
     static const float SCENE_HEIGHT;
     static const float PLAYER_START_X;

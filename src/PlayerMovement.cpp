@@ -1,5 +1,9 @@
 #include "../include/PlayerMovement.h"
+#include "../include/Position.h"
 
-sf::Vector2f PlayerMovement::updatePosition(const sf::Vector2f& currentPosition) {
-    return sf::Vector2f(currentPosition.x + 1.0f, currentPosition.y);
+Position PlayerMovement::updatePosition(const Position& currentPosition, float speedX, float speedY) {
+    Position newPosition;
+    newPosition.x = currentPosition.x + speedX;
+    newPosition.y = currentPosition.y + speedY;
+    return newPosition;
 }
