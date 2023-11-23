@@ -1,11 +1,12 @@
 #ifndef PLAYER_MOVEMENT_H
 #define PLAYER_MOVEMENT_H
 
-#include <SFML/Graphics.hpp>
+#include "Position.h"
 
 class PlayerMovement {
 public:
-    static sf::Vector2f updatePosition(const sf::Vector2f& currentPosition);
+    static Position updatePosition(const Position& currentPosition, float speedX, float speedY);
 };
 
 #endif // PLAYER_MOVEMENT_H
+
