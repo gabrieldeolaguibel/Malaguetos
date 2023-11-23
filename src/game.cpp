@@ -73,9 +73,27 @@ void Game::processInput() {
  * Function to update the position of the player
  */
 void Game::update() {
-    playerPosition = PlayerMovement::updatePosition(playerPosition, speedX, speedY);
+    // Calculate new position
+    Position newPosition = PlayerMovement::updatePosition(playerPosition, speedX, speedY);
+
+    // Boundary checking
+    if (newPosition.x - RADIUS < 0) {
+        newPosition.x = RADIUS; // Left boundary
+    } else if (newPosition.x + RADIUS > SCENE_WIDTH) {
+        newPosition.x = SCENE_WIDTH - RADIUS; // Right boundary
+    }
+
+    if (newPosition.y - RADIUS < 0) {
+        newPosition.y = RADIUS; // Top boundary
+    } else if (newPosition.y + RADIUS > SCENE_HEIGHT) {
+        newPosition.y = SCENE_HEIGHT - RADIUS; // Bottom boundary
+    }
+
+    // Update the player's position
+    playerPosition = newPosition;
     player.setPosition(playerPosition.x, playerPosition.y);
 }
+
 
 /**
  * Render elements in the window
