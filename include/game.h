@@ -4,6 +4,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Position.h"
+#include <vector>
 
 class Game {
 public:
@@ -38,6 +39,8 @@ private:
     // for apple generation
     sf::CircleShape apple;
     std::vector<Position> snakeBody; // represents snake body
+
+    void growSnake(); // Declare the growSnake method
 
     int initWindow();
     int initBackground();

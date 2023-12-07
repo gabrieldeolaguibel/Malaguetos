@@ -16,6 +16,7 @@ Game::Game() : playerPosition(PLAYER_START_X, PLAYER_START_Y), direction(RIGHT),
     initBackground();
     initPlayer();
     initApple();
+    snakeBody.push_back(playerPosition); // Initialize snake with a single segment
 }
 
 int Game::initWindow() {
@@ -95,7 +96,7 @@ void Game::update() {
         // Collision detection between the snake and the apple
         if (player.getGlobalBounds().intersects(apple.getGlobalBounds())) {
             randomizeApplePosition(); // Randomize apple position on collision
-            // TODO: Handle snake growth
+            growSnake();// Handle snake growth
         }
         // Collision detection between the snake and the boundaries
         if (newPosition.x - RADIUS < 0 || newPosition.x + RADIUS > SCENE_WIDTH ||
@@ -104,15 +105,29 @@ void Game::update() {
         } else {
             playerPosition = newPosition;
             player.setPosition(playerPosition.x, playerPosition.y);
+
+        // Update the snake body
+        for (size_t i = snakeBody.size() - 1; i > 0; --i) {
+            snakeBody[i] = snakeBody[i - 1];
+        }
+        snakeBody[0] = playerPosition;
         }
     }
+}
+
+void Game::growSnake() {
+    // Add a new segment to the snake body at the current tail position
+    snakeBody.push_back(snakeBody.back());
 }
 
 void Game::render() {
     window.clear(sf::Color::White);
     if (!isGameOver) {
         window.draw(background);
-        window.draw(player);
+        for (const auto& segment : snakeBody) {
+            player.setPosition(segment.x, segment.y);
+            window.draw(player); // Draw each segment of the snake
+        }
         window.draw(apple); // Render the apple
     } else {
         // Optional: Display a game over message or screen
