@@ -14,9 +14,10 @@ const float Game::APPLE_RADIUS = 20.0f; // Radius for the apple
 Game::Game() : playerPosition(PLAYER_START_X, PLAYER_START_Y), direction(RIGHT), speedX(2.0f), speedY(2.0f), isGameOver(false) {
     initWindow();
     initBackground();
-    initPlayer();
+    initPlayer(); // This will now initialize a square segment instead of Pac-Man
     initApple();
-    snakeBody.push_back(playerPosition); // Initialize snake with a single segment
+    // Initialize snake with a single segment represented by a square
+    snakeBody.push_back(playerPosition);
 }
 
 int Game::initWindow() {
@@ -36,13 +37,10 @@ int Game::initBackground() {
 }
 
 int Game::initPlayer() {
-    player.setRadius(RADIUS);
-    player.setOrigin(RADIUS, RADIUS);
+    player.setRadius(RADIUS / 1.5f); 
+    player.setFillColor(sf::Color::Green); // Set the snake segment to green
     player.setPosition(PLAYER_START_X, PLAYER_START_Y);
-    if (!playerTexture.loadFromFile("resources/pacman.png")) {
-        return 1;
-    }
-    player.setTexture(&playerTexture);
+    // No need to load pacman.png anymore
     return 0;
 }
 
@@ -116,14 +114,20 @@ void Game::update() {
 }
 
 void Game::growSnake() {
-    // Add a new segment to the snake body at the current tail position
-    snakeBody.push_back(snakeBody.back());
+    // Define how many segments to add each time the snake eats an apple
+    const int growthFactor = 15;
+    
+    // Add multiple new segments to the snake body at the current tail position
+    for (int i = 0; i < growthFactor; ++i) {
+        snakeBody.push_back(snakeBody.back());
+    }
 }
 
 void Game::render() {
     window.clear(sf::Color::White);
     if (!isGameOver) {
         window.draw(background);
+        // Render each segment of the snake as a green square
         for (const auto& segment : snakeBody) {
             player.setPosition(segment.x, segment.y);
             window.draw(player); // Draw each segment of the snake
