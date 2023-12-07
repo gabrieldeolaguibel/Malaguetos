@@ -1,33 +1,31 @@
-/*
- * Description: Game class to deal with initialization and controller of 2D my game application.
- */
 #include "../include/PlayerMovement.h"
 #include "../include/game.h"
 #include "../include/Position.h"
-
+#include <cstdlib>
+#include <ctime>
 
 const float Game::SCENE_WIDTH = 900.0f;
 const float Game::SCENE_HEIGHT = 700.0f;
 const float Game::PLAYER_START_X = 400.0f;
 const float Game::PLAYER_START_Y = 300.0f;
 const float Game::RADIUS = 40.0f;
+const float Game::APPLE_RADIUS = 20.0f; // Radius for the apple
 
-Game::Game() : playerPosition(PLAYER_START_X, PLAYER_START_Y), speedX(2.0f), speedY(2.0f) {
+Game::Game() : playerPosition(PLAYER_START_X, PLAYER_START_Y), direction(RIGHT), speedX(2.0f), speedY(2.0f), isGameOver(false) {
     initWindow();
     initBackground();
-    initPlayer();
+    initPlayer(); // This will now initialize a square segment instead of Pac-Man
+    initApple();
+    // Initialize snake with a single segment represented by a square
+    snakeBody.push_back(playerPosition);
 }
-/**
- * Window initializer.
- */
+
 int Game::initWindow() {
-    window.create(sf::VideoMode(SCENE_WIDTH, SCENE_HEIGHT), "PacMan Malaguetos");
+    window.create(sf::VideoMode(SCENE_WIDTH, SCENE_HEIGHT), "Snake Game");
     window.setFramerateLimit(120);
     return 0;
 }
-/**
- * Background initializer.
- */
+
 int Game::initBackground() {
     if (!backgroundTexture.loadFromFile("resources/background.png")) {
         return 1;
@@ -38,24 +36,28 @@ int Game::initBackground() {
     return 0;
 }
 
-/**
- * Player (e.g. PacMan) initializer
- * @return 0 if successfully initialized, 1 otherwise
- */
 int Game::initPlayer() {
-    player.setRadius(RADIUS);
-    player.setOrigin(RADIUS, RADIUS);
+    player.setRadius(RADIUS / 1.5f); 
+    player.setFillColor(sf::Color::Green); // Set the snake segment to green
     player.setPosition(PLAYER_START_X, PLAYER_START_Y);
-    if (!playerTexture.loadFromFile("resources/pacman.png")) {
-        return 1;
-    }
-    player.setTexture(&playerTexture);
+    // No need to load pacman.png anymore
     return 0;
 }
 
-/**
- * Dealing with events on window.
- */
+void Game::initApple() {
+    srand(time(NULL)); // Seed for random number generation
+    apple.setRadius(APPLE_RADIUS);
+    apple.setFillColor(sf::Color::Red); // Color the apple red
+    randomizeApplePosition(); // Set initial position of the apple
+}
+
+void Game::randomizeApplePosition() {
+    float x = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_WIDTH - APPLE_RADIUS * 2);
+    float y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_HEIGHT - APPLE_RADIUS * 2);
+    apple.setPosition(x + APPLE_RADIUS, y + APPLE_RADIUS);
+}
+
+
 void Game::processInput() {
     sf::Event event;
     while (window.pollEvent(event)) {
@@ -63,50 +65,80 @@ void Game::processInput() {
             case sf::Event::Closed:
                 window.close();
                 break;
-            default:
+            case sf::Event::KeyPressed:
+                if (!isGameOver) {
+                    switch (event.key.code) {
+                        case sf::Keyboard::Up:    direction = UP; break;
+                        case sf::Keyboard::Down:  direction = DOWN; break;
+                        case sf::Keyboard::Left:  direction = LEFT; break;
+                        case sf::Keyboard::Right: direction = RIGHT; break;
+                    }
+                }
                 break;
         }
     }
 }
 
-/**
- * Function to update the position of the player
- */
 void Game::update() {
-    // Calculate new position
-    Position newPosition = PlayerMovement::updatePosition(playerPosition, speedX, speedY);
+    if (!isGameOver) {
+        Position newPosition = playerPosition;
 
-    // Boundary checking
-    if (newPosition.x - RADIUS < 0) {
-        newPosition.x = RADIUS; // Left boundary
-    } else if (newPosition.x + RADIUS > SCENE_WIDTH) {
-        newPosition.x = SCENE_WIDTH - RADIUS; // Right boundary
+        // Move the player in the direction of the arrow key pressed
+        switch (direction) {
+            case UP:    newPosition.y -= speedY; break;
+            case DOWN:  newPosition.y += speedY; break;
+            case LEFT:  newPosition.x -= speedX; break;
+            case RIGHT: newPosition.x += speedX; break;
+        }
+
+        // Collision detection between the snake and the apple
+        if (player.getGlobalBounds().intersects(apple.getGlobalBounds())) {
+            randomizeApplePosition(); // Randomize apple position on collision
+            growSnake();// Handle snake growth
+        }
+        // Collision detection between the snake and the boundaries
+        if (newPosition.x - RADIUS < 0 || newPosition.x + RADIUS > SCENE_WIDTH ||
+            newPosition.y - RADIUS < 0 || newPosition.y + RADIUS > SCENE_HEIGHT) {
+            isGameOver = true; // Set the game over flag if the player hits the boundary
+        } else {
+            playerPosition = newPosition;
+            player.setPosition(playerPosition.x, playerPosition.y);
+
+        // Update the snake body
+        for (size_t i = snakeBody.size() - 1; i > 0; --i) {
+            snakeBody[i] = snakeBody[i - 1];
+        }
+        snakeBody[0] = playerPosition;
+        }
     }
-
-    if (newPosition.y - RADIUS < 0) {
-        newPosition.y = RADIUS; // Top boundary
-    } else if (newPosition.y + RADIUS > SCENE_HEIGHT) {
-        newPosition.y = SCENE_HEIGHT - RADIUS; // Bottom boundary
-    }
-
-    // Update the player's position
-    playerPosition = newPosition;
-    player.setPosition(playerPosition.x, playerPosition.y);
 }
 
+void Game::growSnake() {
+    // Define how many segments to add each time the snake eats an apple
+    const int growthFactor = 15;
+    
+    // Add multiple new segments to the snake body at the current tail position
+    for (int i = 0; i < growthFactor; ++i) {
+        snakeBody.push_back(snakeBody.back());
+    }
+}
 
-/**
- * Render elements in the window
- */
 void Game::render() {
     window.clear(sf::Color::White);
-    window.draw(background);
-    window.draw(player);
+    if (!isGameOver) {
+        window.draw(background);
+        // Render each segment of the snake as a green square
+        for (const auto& segment : snakeBody) {
+            player.setPosition(segment.x, segment.y);
+            window.draw(player); // Draw each segment of the snake
+        }
+        window.draw(apple); // Render the apple
+    } else {
+        // Optional: Display a game over message or screen
+    }
     window.display();
 }
-/**
- * Main function to deal with events, update the player and render the updated scene on the window.
- */
+
 int Game::run() {
     while (window.isOpen()) {
         processInput();

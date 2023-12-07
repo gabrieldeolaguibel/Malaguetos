@@ -4,6 +4,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Position.h"
+#include <vector>
 
 class Game {
 public:
@@ -26,10 +27,26 @@ private:
     static const float PLAYER_START_X;
     static const float PLAYER_START_Y;
     static const float RADIUS;
+    static const float APPLE_RADIUS; // Radius for the apple
+
+    // for player direction control using arrow keys
+    enum Direction { UP, DOWN, LEFT, RIGHT };
+    Direction direction; 
+
+    // for game over
+    bool isGameOver;
+
+    // for apple generation
+    sf::CircleShape apple;
+    std::vector<Position> snakeBody; // represents snake body
+
+    void growSnake(); // Declare the growSnake method
 
     int initWindow();
     int initBackground();
     int initPlayer();
+    void initApple(); // Declare the initApple method
+    void randomizeApplePosition(); // Declare the randomizeApplePosition method
     void processInput();
     void update();
     void render();
