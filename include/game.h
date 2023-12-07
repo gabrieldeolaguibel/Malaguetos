@@ -30,6 +30,8 @@ private:
     enum Direction { UP, DOWN, LEFT, RIGHT };
     Direction direction; 
 
+    bool isGameOver;
+
     int initWindow();
     int initBackground();
     int initPlayer();
