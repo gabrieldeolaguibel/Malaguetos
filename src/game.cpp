@@ -1,17 +1,21 @@
 #include "../include/PlayerMovement.h"
 #include "../include/game.h"
 #include "../include/Position.h"
+#include <cstdlib>
+#include <ctime>
 
 const float Game::SCENE_WIDTH = 900.0f;
 const float Game::SCENE_HEIGHT = 700.0f;
 const float Game::PLAYER_START_X = 400.0f;
 const float Game::PLAYER_START_Y = 300.0f;
 const float Game::RADIUS = 40.0f;
+const float Game::APPLE_RADIUS = 20.0f; // Radius for the apple
 
 Game::Game() : playerPosition(PLAYER_START_X, PLAYER_START_Y), direction(RIGHT), speedX(2.0f), speedY(2.0f), isGameOver(false) {
     initWindow();
     initBackground();
     initPlayer();
+    initApple();
 }
 
 int Game::initWindow() {
@@ -40,6 +44,20 @@ int Game::initPlayer() {
     player.setTexture(&playerTexture);
     return 0;
 }
+
+void Game::initApple() {
+    srand(time(NULL)); // Seed for random number generation
+    apple.setRadius(APPLE_RADIUS);
+    apple.setFillColor(sf::Color::Red); // Color the apple red
+    randomizeApplePosition(); // Set initial position of the apple
+}
+
+void Game::randomizeApplePosition() {
+    float x = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_WIDTH - APPLE_RADIUS * 2);
+    float y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_HEIGHT - APPLE_RADIUS * 2);
+    apple.setPosition(x + APPLE_RADIUS, y + APPLE_RADIUS);
+}
+
 
 void Game::processInput() {
     sf::Event event;
@@ -88,8 +106,9 @@ void Game::render() {
     if (!isGameOver) {
         window.draw(background);
         window.draw(player);
+        window.draw(apple); // Render the apple
     } else {
-        // for later: Display a game over message or screen
+        // Optional: Display a game over message or screen
     }
     window.display();
 }
