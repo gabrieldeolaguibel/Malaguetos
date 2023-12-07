@@ -27,6 +27,9 @@ private:
     static const float PLAYER_START_Y;
     static const float RADIUS;
 
+    enum Direction { UP, DOWN, LEFT, RIGHT };
+    Direction direction; 
+
     int initWindow();
     int initBackground();
     int initPlayer();

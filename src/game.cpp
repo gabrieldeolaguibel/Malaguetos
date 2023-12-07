@@ -63,7 +63,13 @@ void Game::processInput() {
             case sf::Event::Closed:
                 window.close();
                 break;
-            default:
+            case sf::Event::KeyPressed:
+                switch (event.key.code) {
+                    case sf::Keyboard::Up:    direction = UP; break;
+                    case sf::Keyboard::Down:  direction = DOWN; break;
+                    case sf::Keyboard::Left:  direction = LEFT; break;
+                    case sf::Keyboard::Right: direction = RIGHT; break;
+                }
                 break;
         }
     }
@@ -74,7 +80,14 @@ void Game::processInput() {
  */
 void Game::update() {
     // Calculate new position
-    Position newPosition = PlayerMovement::updatePosition(playerPosition, speedX, speedY);
+    Position newPosition = playerPosition;
+
+    switch (direction) {
+        case UP:    newPosition.y -= speedY; break;
+        case DOWN:  newPosition.y += speedY; break;
+        case LEFT:  newPosition.x -= speedX; break;
+        case RIGHT: newPosition.x += speedX; break;
+    }
 
     // Boundary checking
     if (newPosition.x - RADIUS < 0) {
