@@ -84,6 +84,7 @@ void Game::update() {
     if (!isGameOver) {
         Position newPosition = playerPosition;
 
+        // Move the player in the direction of the arrow key pressed
         switch (direction) {
             case UP:    newPosition.y -= speedY; break;
             case DOWN:  newPosition.y += speedY; break;
@@ -91,6 +92,12 @@ void Game::update() {
             case RIGHT: newPosition.x += speedX; break;
         }
 
+        // Collision detection between the snake and the apple
+        if (player.getGlobalBounds().intersects(apple.getGlobalBounds())) {
+            randomizeApplePosition(); // Randomize apple position on collision
+            // TODO: Handle snake growth
+        }
+        // Collision detection between the snake and the boundaries
         if (newPosition.x - RADIUS < 0 || newPosition.x + RADIUS > SCENE_WIDTH ||
             newPosition.y - RADIUS < 0 || newPosition.y + RADIUS > SCENE_HEIGHT) {
             isGameOver = true; // Set the game over flag if the player hits the boundary
