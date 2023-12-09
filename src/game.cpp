@@ -81,37 +81,43 @@ void Game::processInput() {
 
 void Game::update() {
     if (!isGameOver) {
-        Position newPosition = playerPosition;
-
-        // Move the player in the direction of the arrow key pressed
+        // Calculate the new position based on the current direction
         switch (direction) {
-            case UP:    newPosition.y -= speedY; break;
-            case DOWN:  newPosition.y += speedY; break;
-            case LEFT:  newPosition.x -= speedX; break;
-            case RIGHT: newPosition.x += speedX; break;
+            case UP:    playerPosition.y -= speedY; break;
+            case DOWN:  playerPosition.y += speedY; break;
+            case LEFT:  playerPosition.x -= speedX; break;
+            case RIGHT: playerPosition.x += speedX; break;
         }
 
-        // Collision detection between the snake and the apple
-        if (player.getGlobalBounds().intersects(apple.getGlobalBounds())) {
-            randomizeApplePosition(); // Randomize apple position on collision
-            growSnake();// Handle snake growth
+        // Collision detection with the apple
+        // The snake head is the first element of the snakeBody vector
+        Position snakeHead = snakeBody.front();
+        float deltaX = apple.getPosition().x - snakeHead.x;
+        float deltaY = apple.getPosition().y - snakeHead.y;
+        float distance = std::sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        // If the distance is less than the sum of the radii, we have a collision
+        if (distance < (player.getRadius() + apple.getRadius())) {
+            randomizeApplePosition();
+            growSnake();
         }
-        // Collision detection between the snake and the boundaries
-        if (newPosition.x - RADIUS < 0 || newPosition.x + RADIUS > SCENE_WIDTH ||
-            newPosition.y - RADIUS < 0 || newPosition.y + RADIUS > SCENE_HEIGHT) {
-            isGameOver = true; // Set the game over flag if the player hits the boundary
-        } else {
-            playerPosition = newPosition;
-            player.setPosition(playerPosition.x, playerPosition.y);
 
         // Update the snake body
+        // Move the rest of the body
         for (size_t i = snakeBody.size() - 1; i > 0; --i) {
             snakeBody[i] = snakeBody[i - 1];
         }
+        // Update the head position
         snakeBody[0] = playerPosition;
+
+        // Boundary collision detection
+        if (playerPosition.x - RADIUS < 0 || playerPosition.x + RADIUS > SCENE_WIDTH ||
+            playerPosition.y - RADIUS < 0 || playerPosition.y + RADIUS > SCENE_HEIGHT) {
+            isGameOver = true; // Game over if the snake hits the boundary
         }
     }
 }
+
 
 void Game::growSnake() {
     // Define how many segments to add each time the snake eats an apple
