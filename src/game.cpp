@@ -89,6 +89,14 @@ void Game::update() {
             case RIGHT: playerPosition.x += speedX; break;
         }
 
+        // Self-collision detection logic
+        for (size_t i = 1; i < snakeBody.size(); ++i) {
+            if (playerPosition.x == snakeBody[i].x && playerPosition.y == snakeBody[i].y) {
+                isGameOver = true; // End game if the snake's head collides with any part of its body
+                return; // No need to run the rest of the update if the game is over
+            }
+        }
+
         // Collision detection with the apple
         // The snake head is the first element of the snakeBody vector
         Position snakeHead = snakeBody.front();
@@ -117,6 +125,7 @@ void Game::update() {
         }
     }
 }
+
 
 
 void Game::growSnake() {
