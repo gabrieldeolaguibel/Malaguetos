@@ -52,8 +52,25 @@ void Game::initApple() {
 }
 
 void Game::randomizeApplePosition() {
-    float x = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_WIDTH - APPLE_RADIUS * 2);
-    float y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_HEIGHT - APPLE_RADIUS * 2);
+    bool isPositionOnSnake;
+    float x, y;
+
+    do {
+        isPositionOnSnake = false;
+        x = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_WIDTH - APPLE_RADIUS * 2);
+        y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_HEIGHT - APPLE_RADIUS * 2);
+
+        // Check if the random position is on the snake's body
+        for (const auto& segment : snakeBody) {
+            if (std::abs(segment.x - (x + APPLE_RADIUS)) < APPLE_RADIUS * 2 &&
+                std::abs(segment.y - (y + APPLE_RADIUS)) < APPLE_RADIUS * 2) {
+                isPositionOnSnake = true;
+                break; // No need to check other segments if one is overlapping
+            }
+        }
+    } while (isPositionOnSnake); // Continue trying if the position is on the snake
+
+    // Set apple position if it's not colliding with the snake
     apple.setPosition(x + APPLE_RADIUS, y + APPLE_RADIUS);
 }
 
