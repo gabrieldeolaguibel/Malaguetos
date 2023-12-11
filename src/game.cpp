@@ -18,6 +18,8 @@ Game::Game() : playerPosition(PLAYER_START_X, PLAYER_START_Y), direction(RIGHT),
     initApple();
     initMovingApple();
     initShrinkingApple(); // Call the new method to initialize the shrinking apple
+    initAdditionalShrinkingApple(); // Initialize the additional static red apple
+
     // Initialize snake with a single segment represented by a square
     snakeBody.push_back(playerPosition);
 }
@@ -42,14 +44,13 @@ int Game::initPlayer() {
     player.setRadius(RADIUS / 1.5f); 
     player.setFillColor(sf::Color::Green); // Set the snake segment to green
     player.setPosition(PLAYER_START_X, PLAYER_START_Y);
-    // No need to load pacman.png anymore
     return 0;
 }
 
 void Game::initApple() {
     srand(time(NULL)); // Seed for random number generation
     apple.setRadius(APPLE_RADIUS);
-    apple.setFillColor(sf::Color::Red); // Color the apple red
+    apple.setFillColor(sf::Color::Green);
     randomizeApplePosition(); // Set initial position of the apple
 }
 
@@ -107,6 +108,49 @@ void Game::initMovingApple() {
     movingAppleSpeedX = 1.0f; // Set initial speed for the moving apple
     movingAppleSpeedY = 1.0f;
 }
+void Game::randomizeAdditionalShrinkingApplePosition() {
+    bool isPositionOnSnake;
+    float x, y;
+
+    do {
+        isPositionOnSnake = false;
+        x = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_WIDTH - APPLE_RADIUS * 2);
+        y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_HEIGHT - APPLE_RADIUS * 2);
+
+        // Check if the random position is on the snake's body or overlaps with other apples
+        for (const auto& segment : snakeBody) {
+            if (std::abs(segment.x - (x + APPLE_RADIUS)) < APPLE_RADIUS * 2 &&
+                std::abs(segment.y - (y + APPLE_RADIUS)) < APPLE_RADIUS * 2) {
+                isPositionOnSnake = true;
+                break;
+            }
+        }
+
+        if (!isPositionOnSnake) {
+            // Check for overlap with other apples
+            if (checkAppleOverlap(x, y, apple) || checkAppleOverlap(x, y, movingApple) || checkAppleOverlap(x, y, shrinkingApple)) {
+                isPositionOnSnake = true;
+            }
+        }
+    } while (isPositionOnSnake);
+
+    additionalShrinkingApple.setPosition(x + APPLE_RADIUS, y + APPLE_RADIUS);
+}
+
+bool Game::checkAppleOverlap(float x, float y, const sf::CircleShape& otherApple) {
+    float deltaX = otherApple.getPosition().x - x;
+    float deltaY = otherApple.getPosition().y - y;
+    return std::sqrt(deltaX * deltaX + deltaY * deltaY) < APPLE_RADIUS * 2;
+}
+
+
+void Game::initAdditionalShrinkingApple() {
+    additionalShrinkingApple.setRadius(APPLE_RADIUS);
+    additionalShrinkingApple.setFillColor(sf::Color::Red); // Set color to red
+    randomizeAdditionalShrinkingApplePosition();
+}
+
+
 void Game::processInput() {
     sf::Event event;
     while (window.pollEvent(event)) {
@@ -168,8 +212,8 @@ void Game::update() {
         snakeBody[0] = playerPosition;
 
         // Boundary collision detection
-        if (playerPosition.x - (RADIUS / 1.5f) < 0 || playerPosition.x + RADIUS > SCENE_WIDTH ||
-            playerPosition.y - (RADIUS / 1.5f) < 0 || playerPosition.y + RADIUS > SCENE_HEIGHT) {
+        if (playerPosition.x - (RADIUS / 1.5f) < 0 || playerPosition.x + (RADIUS / 1.5f) > SCENE_WIDTH ||
+            playerPosition.y - (RADIUS / 1.5f) < 0 || playerPosition.y + (RADIUS / 1.5f) > SCENE_HEIGHT) {
             isGameOver = true; // Game over if the snake hits the boundary
         }
 
@@ -181,7 +225,12 @@ void Game::update() {
         // Collision detection with the shrinking apple
         if (checkCollision(snakeHead, shrinkingApple)) {
             randomizeShrinkingApplePosition();
-            shrinkSnake(30); // Shrink the snake by 3 segments
+            shrinkSnake(30); // Shrink the snake by 30 segments
+        }
+        // Collision detection with the additional static red apple
+        if (checkCollision(snakeHead, additionalShrinkingApple)) {
+            randomizeAdditionalShrinkingApplePosition();
+            shrinkSnake(30); // Shrink the snake by 30 segments
         }
         updateShrinkingApplePosition();
         updateMovingApplePosition(); 
@@ -234,7 +283,7 @@ void Game::growSnake(int growthFactor) {
 
 void Game::initShrinkingApple() {
     shrinkingApple.setRadius(APPLE_RADIUS);
-    shrinkingApple.setFillColor(sf::Color::Yellow); // Different color for distinction
+    shrinkingApple.setFillColor(sf::Color::Red); // Different color for distinction
     randomizeShrinkingApplePosition();
     shrinkingAppleSpeedX = 1.0f; // Set initial speed for the shrinking apple
     shrinkingAppleSpeedY = 1.0f;
@@ -302,6 +351,7 @@ void Game::render() {
     }
     window.draw(movingApple); // Draw the moving apple
     window.draw(shrinkingApple); // Draw the shrinking apple
+    window.draw(additionalShrinkingApple); // Draw the additional static red apple
     window.display();
 }
 

@@ -13,6 +13,8 @@ public:
     void growSnake(int growthFactor); // Modified to accept growth factor
     bool checkCollision(const Position& snakeHead, const sf::CircleShape& apple);
     void shrinkSnake(int shrinkFactor); // Method to shrink the snake
+    void initAdditionalShrinkingApple();
+    bool checkAppleOverlap(float x, float y, const sf::CircleShape& otherApple);
 
 private:
     sf::RenderWindow window;
@@ -51,6 +53,9 @@ private:
     float movingAppleSpeedX;     // Speed of the moving apple in the X direction
     float movingAppleSpeedY;     // Speed of the moving apple in the Y direction
 
+    sf::CircleShape additionalShrinkingApple; // The additional static red apple
+
+    void randomizeAdditionalShrinkingApplePosition(); // Method to randomize the position of the additional static red apple
     void initShrinkingApple();                 // Initialize the shrinking apple
     void updateShrinkingApplePosition();       // Update the position of the shrinking apple
     void randomizeShrinkingApplePosition();    // Randomize the starting position of the shrinking apple
