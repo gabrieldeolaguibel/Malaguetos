@@ -39,6 +39,7 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 CMakeLists.txt
+.DS_Store
 
 # add the build directory
 build/

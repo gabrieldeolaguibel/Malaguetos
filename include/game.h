@@ -10,6 +10,11 @@ class Game {
 public:
     Game();
     int run();
+    void growSnake(int growthFactor); // Modified to accept growth factor
+    bool checkCollision(const Position& snakeHead, const sf::CircleShape& apple);
+    void shrinkSnake(int shrinkFactor); // Method to shrink the snake
+    void initAdditionalShrinkingApple();
+    bool checkAppleOverlap(float x, float y, const sf::CircleShape& otherApple);
 
 private:
     sf::RenderWindow window;
@@ -40,8 +45,23 @@ private:
     sf::CircleShape apple;
     std::vector<Position> snakeBody; // represents snake body
 
-    void growSnake(); // Declare the growSnake method
+    sf::CircleShape shrinkingApple; // The shrinking apple
+    float shrinkingAppleSpeedX;     // Speed of the shrinking apple in the X direction
+    float shrinkingAppleSpeedY;     // Speed of the shrinking apple in the Y direction
 
+    sf::CircleShape movingApple; // The moving apple
+    float movingAppleSpeedX;     // Speed of the moving apple in the X direction
+    float movingAppleSpeedY;     // Speed of the moving apple in the Y direction
+
+    sf::CircleShape additionalShrinkingApple; // The additional static red apple
+
+    void randomizeAdditionalShrinkingApplePosition(); // Method to randomize the position of the additional static red apple
+    void initShrinkingApple();                 // Initialize the shrinking apple
+    void updateShrinkingApplePosition();       // Update the position of the shrinking apple
+    void randomizeShrinkingApplePosition();    // Randomize the starting position of the shrinking apple
+    void initMovingApple();                 // Initialize the moving apple
+    void updateMovingApplePosition();       // Update the position of the moving apple
+    void randomizeMovingApplePosition();    // Randomize the starting position of the moving apple
     int initWindow();
     int initBackground();
     int initPlayer();
