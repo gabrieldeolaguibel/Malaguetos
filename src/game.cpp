@@ -16,6 +16,8 @@ Game::Game() : playerPosition(PLAYER_START_X, PLAYER_START_Y), direction(RIGHT),
     initBackground();
     initPlayer(); // This will now initialize a square segment instead of Pac-Man
     initApple();
+    initMovingApple();
+    initShrinkingApple(); // Call the new method to initialize the shrinking apple
     // Initialize snake with a single segment represented by a square
     snakeBody.push_back(playerPosition);
 }
@@ -74,7 +76,37 @@ void Game::randomizeApplePosition() {
     apple.setPosition(x + APPLE_RADIUS, y + APPLE_RADIUS);
 }
 
+void Game::randomizeMovingApplePosition() {
+    bool isPositionOnSnake;
+    float x, y;
 
+    do {
+        isPositionOnSnake = false;
+        x = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_WIDTH - APPLE_RADIUS * 2);
+        y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_HEIGHT - APPLE_RADIUS * 2);
+
+        // Check if the random position is on the snake's body
+        for (const auto& segment : snakeBody) {
+            if (std::abs(segment.x - (x + APPLE_RADIUS)) < APPLE_RADIUS * 2 &&
+                std::abs(segment.y - (y + APPLE_RADIUS)) < APPLE_RADIUS * 2) {
+                isPositionOnSnake = true;
+                break;
+            }
+        }
+    } while (isPositionOnSnake); // Continue trying if the position is on the snake
+
+    // Set moving apple position if it's not colliding with the snake
+    movingApple.setPosition(x + APPLE_RADIUS, y + APPLE_RADIUS);
+}
+
+
+void Game::initMovingApple() {
+    movingApple.setRadius(APPLE_RADIUS);
+    movingApple.setFillColor(sf::Color::Blue); // Different color for distinction
+    randomizeMovingApplePosition();
+    movingAppleSpeedX = 1.0f; // Set initial speed for the moving apple
+    movingAppleSpeedY = 1.0f;
+}
 void Game::processInput() {
     sf::Event event;
     while (window.pollEvent(event)) {
@@ -124,7 +156,7 @@ void Game::update() {
         // If the distance is less than the sum of the radii, we have a collision
         if (distance < (player.getRadius() + apple.getRadius())) {
             randomizeApplePosition();
-            growSnake();
+            growSnake(3);
         }
 
         // Update the snake body
@@ -136,24 +168,124 @@ void Game::update() {
         snakeBody[0] = playerPosition;
 
         // Boundary collision detection
-        if (playerPosition.x - RADIUS < 0 || playerPosition.x + RADIUS > SCENE_WIDTH ||
-            playerPosition.y - RADIUS < 0 || playerPosition.y + RADIUS > SCENE_HEIGHT) {
+        if (playerPosition.x - (RADIUS / 1.5f) < 0 || playerPosition.x + RADIUS > SCENE_WIDTH ||
+            playerPosition.y - (RADIUS / 1.5f) < 0 || playerPosition.y + RADIUS > SCENE_HEIGHT) {
             isGameOver = true; // Game over if the snake hits the boundary
         }
+
+        // Collision detection with the moving apple
+        if (checkCollision(snakeHead, movingApple)) {
+            randomizeMovingApplePosition();
+            growSnake(30); // Increase growth factor for moving apple
+        }
+        // Collision detection with the shrinking apple
+        if (checkCollision(snakeHead, shrinkingApple)) {
+            randomizeShrinkingApplePosition();
+            shrinkSnake(30); // Shrink the snake by 3 segments
+        }
+        updateShrinkingApplePosition();
+        updateMovingApplePosition(); 
+    }
+}
+
+void Game::updateShrinkingApplePosition() {
+    // Move the apple
+    shrinkingApple.setPosition(shrinkingApple.getPosition().x + shrinkingAppleSpeedX,
+                               shrinkingApple.getPosition().y + shrinkingAppleSpeedY);
+
+    // Boundary collision detection and response
+    if (shrinkingApple.getPosition().x < 0 || shrinkingApple.getPosition().x > SCENE_WIDTH) {
+        shrinkingAppleSpeedX = -shrinkingAppleSpeedX;
+    }
+    if (shrinkingApple.getPosition().y < 0 || shrinkingApple.getPosition().y > SCENE_HEIGHT) {
+        shrinkingAppleSpeedY = -shrinkingAppleSpeedY;
+    }
+}
+
+bool Game::checkCollision(const Position& snakeHead, const sf::CircleShape& apple) {
+    float deltaX = apple.getPosition().x - snakeHead.x;
+    float deltaY = apple.getPosition().y - snakeHead.y;
+    float distance = std::sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    return distance < (player.getRadius() + apple.getRadius());
+}
+
+
+void Game::updateMovingApplePosition() {
+    // Move the apple
+    movingApple.setPosition(movingApple.getPosition().x + movingAppleSpeedX,
+                            movingApple.getPosition().y + movingAppleSpeedY);
+
+    // Boundary collision detection and response
+    if (movingApple.getPosition().x < 0 || movingApple.getPosition().x > SCENE_WIDTH) {
+        movingAppleSpeedX = -movingAppleSpeedX;
+    }
+    if (movingApple.getPosition().y < 0 || movingApple.getPosition().y > SCENE_HEIGHT) {
+        movingAppleSpeedY = -movingAppleSpeedY;
     }
 }
 
 
-
-void Game::growSnake() {
-    // Define how many segments to add each time the snake eats an apple
-    const int growthFactor = 15;
-    
-    // Add multiple new segments to the snake body at the current tail position
+void Game::growSnake(int growthFactor) {
     for (int i = 0; i < growthFactor; ++i) {
         snakeBody.push_back(snakeBody.back());
     }
 }
+
+void Game::initShrinkingApple() {
+    shrinkingApple.setRadius(APPLE_RADIUS);
+    shrinkingApple.setFillColor(sf::Color::Yellow); // Different color for distinction
+    randomizeShrinkingApplePosition();
+    shrinkingAppleSpeedX = 1.0f; // Set initial speed for the shrinking apple
+    shrinkingAppleSpeedY = 1.0f;
+}
+
+void Game::shrinkSnake(int shrinkFactor) {
+    for (int i = 0; i < shrinkFactor && !snakeBody.empty(); ++i) {
+        snakeBody.pop_back();
+    }
+    if (snakeBody.empty()) {
+        isGameOver = true; // End the game if the snake has no segments left
+    }
+}
+
+void Game::randomizeShrinkingApplePosition() {
+    bool isPositionOnSnake;
+    float x, y;
+
+    do {
+        isPositionOnSnake = false;
+        x = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_WIDTH - APPLE_RADIUS * 2);
+        y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * (SCENE_HEIGHT - APPLE_RADIUS * 2);
+
+        // Check if the random position is on the snake's body
+        for (const auto& segment : snakeBody) {
+            if (std::abs(segment.x - (x + APPLE_RADIUS)) < APPLE_RADIUS * 2 &&
+                std::abs(segment.y - (y + APPLE_RADIUS)) < APPLE_RADIUS * 2) {
+                isPositionOnSnake = true;
+                break;
+            }
+        }
+
+        // Additionally, check if the position overlaps with the regular or moving apple
+        if (!isPositionOnSnake) {
+            float regularAppleX = apple.getPosition().x;
+            float regularAppleY = apple.getPosition().y;
+            float movingAppleX = movingApple.getPosition().x;
+            float movingAppleY = movingApple.getPosition().y;
+
+            if ((std::abs(x - regularAppleX) < APPLE_RADIUS * 2 && std::abs(y - regularAppleY) < APPLE_RADIUS * 2) ||
+                (std::abs(x - movingAppleX) < APPLE_RADIUS * 2 && std::abs(y - movingAppleY) < APPLE_RADIUS * 2)) {
+                isPositionOnSnake = true;
+            }
+        }
+    } while (isPositionOnSnake); // Continue trying if the position is on the snake or overlaps with other apples
+
+    // Set shrinking apple position if it's not colliding with the snake or other apples
+    shrinkingApple.setPosition(x + APPLE_RADIUS, y + APPLE_RADIUS);
+}
+
+
 
 void Game::render() {
     window.clear(sf::Color::White);
@@ -168,6 +300,8 @@ void Game::render() {
     } else {
         // Optional: Display a game over message or screen
     }
+    window.draw(movingApple); // Draw the moving apple
+    window.draw(shrinkingApple); // Draw the shrinking apple
     window.display();
 }
 
