@@ -40,7 +40,6 @@ target_link_libraries(${PROJECT_NAME} sfml-graphics sfml-window sfml-system)
 add_executable(game_tests
         src/googletest.cpp
         src/game.cpp
-
 )
 
 # Link Google Test and SFML to the test executable

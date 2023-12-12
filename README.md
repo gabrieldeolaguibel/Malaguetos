@@ -76,7 +76,14 @@ There are 4 main files to build the game's functionality and logic, all inside o
   - `growSnake()` & `shrinkSnake()` - These functions are responsible for growing and shrinking the snake.
   - `render()` - This function is responsible for rendering the game.
   - `run()` - This function is responsible for running the game.
+  - `getSnakeSize()` - This function is responsible for getting the size of the snake.
+  - `getSnakePosition()` - returns the current position of the snake for a specific segment.
 - `Position` struct which is used in the `PlayerMovement` class
   - `x` & `y` - These variables are of type `float` and are responsible for telling us the position of the snake.
 - `PlayerMovement` class
   - `updatePosition()` - This function is responsible for updating the position of the snake and the food.
+
+### Testing
+- The project is tested using [GoogleTest](https://github.com/google/googletest), which is fetched inside the CMakeLists.txt file for a smooth integration across different platforms.
+- The tests are located inside the googletest.cpp file inside the src folder, and can be run by finding the game_tests executable, created by the CMakeLists file.
+- The tests are divided into three different suites; one to check game initialization, one to check the game's functionality, and one to check if the size of the snake is correct.
