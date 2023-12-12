@@ -43,4 +43,6 @@ CMakeLists.txt
 
 # add the build directory
 build/
+.idea/
+cmake-build-debug/
 ```

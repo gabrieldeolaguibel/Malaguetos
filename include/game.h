@@ -15,6 +15,8 @@ public:
     void shrinkSnake(int shrinkFactor); // Method to shrink the snake
     void initAdditionalShrinkingApple();
     bool checkAppleOverlap(float x, float y, const sf::CircleShape& otherApple);
+    int getSnakeSize(); // Method to get the size of the snake
+    Position getSnakePosition(int index); // Method to get the position of the snake
 
 private:
     sf::RenderWindow window;
