@@ -33,6 +33,10 @@ Position Game::getSnakePosition(int index) {
     return snakeBody[index];
 }
 
+void Game::setDirection(Direction newDirection) {
+    this->direction = newDirection;
+}
+
 // Initialize the window to play the game
 int Game::initWindow() {
     window.create(sf::VideoMode(SCENE_WIDTH, SCENE_HEIGHT), "Snake Game");
