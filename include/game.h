@@ -8,6 +8,7 @@
 
 class Game {
 public:
+    enum Direction { UP, DOWN, LEFT, RIGHT };
     Game();
     int run();
     void growSnake(int growthFactor); // Modified to accept growth factor
@@ -17,6 +18,8 @@ public:
     bool checkAppleOverlap(float x, float y, const sf::CircleShape& otherApple);
     int getSnakeSize(); // Method to get the size of the snake
     Position getSnakePosition(int index); // Method to get the position of the snake
+    void setDirection(Direction newDirection); // Method to set the direction of the snake
+    void update();
 
 private:
     sf::RenderWindow window;
@@ -37,7 +40,6 @@ private:
     static const float APPLE_RADIUS; // Radius for the apple
 
     // for player direction control using arrow keys
-    enum Direction { UP, DOWN, LEFT, RIGHT };
     Direction direction; 
 
     // for game over
@@ -70,6 +72,5 @@ private:
     void initApple(); // Declare the initApple method
     void randomizeApplePosition(); // Declare the randomizeApplePosition method
     void processInput();
-    void update();
     void render();
 };
