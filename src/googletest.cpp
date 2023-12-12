@@ -41,3 +41,35 @@ TEST(GameTest, CollisionDetection) {
     // Expect no collision between snake head and apple
     EXPECT_FALSE(game.checkCollision(snakeHead, apple));
 }
+
+TEST(MovementTest, Direction) {
+    Game game;
+
+    // Scenario 1: Test UP direction
+    game.setDirection(Game::UP);
+    game.update();
+
+    // Expect the snake to move up
+    EXPECT_EQ(game.getSnakePosition(0).y, 298.0f);
+
+    // Scenario 2: Test DOWN direction
+    game.setDirection(Game::DOWN);
+    game.update();
+
+    // Expect the snake to move down
+    EXPECT_EQ(game.getSnakePosition(0).y, 300.0f);
+
+    // Scenario 3: Test LEFT direction
+    game.setDirection(Game::LEFT);
+    game.update();
+
+    // Expect the snake to move left
+    EXPECT_EQ(game.getSnakePosition(0).x, 398.0f);
+
+    // Scenario 4: Test RIGHT direction
+    game.setDirection(Game::RIGHT);
+    game.update();
+
+    // Expect the snake to move right
+    EXPECT_EQ(game.getSnakePosition(0).x, 400.0f);
+}
