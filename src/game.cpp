@@ -3,6 +3,7 @@
 #include "../include/Position.h"
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 
 const float Game::SCENE_WIDTH = 900.0f;
 const float Game::SCENE_HEIGHT = 700.0f;
