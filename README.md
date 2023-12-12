@@ -86,4 +86,4 @@ There are 4 main files to build the game's functionality and logic, all inside o
 ### Testing
 - The project is tested using [GoogleTest](https://github.com/google/googletest), which is fetched inside the CMakeLists.txt file for a smooth integration across different platforms.
 - The tests are located inside the googletest.cpp file inside the src folder, and can be run by finding the game_tests executable, created by the CMakeLists file.
-- The tests are divided into four different suites; one to check game initialization, one to check the game's functionality, one to check if the size of the snake is correct, and one to check for collision.
+- The tests are divided into five different suites; one to check game initialization, one to check the game's functionality, one to check if the size of the snake is correct, one to check for collision, and one to check for direction updates.
